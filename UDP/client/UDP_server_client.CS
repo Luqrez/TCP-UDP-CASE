@@ -10,18 +10,6 @@ class Program
         UdpClient client = new UdpClient();
         client.EnableBroadcast = true;
 
-           string message;
-        if (args.Length == 0)
-        {
-            Console.Write("Enter message to send: ");
-            message = Console.ReadLine() ?? "Test message";
-        }
-        else
-        {
-            message = args[0];
-        }
-
-
         IPAddress broadcast = IPAddress.Parse("127.0.0.1");
         IPEndPoint ep = new IPEndPoint(broadcast, 11000);
 
