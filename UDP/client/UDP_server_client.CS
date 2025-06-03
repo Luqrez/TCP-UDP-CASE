@@ -13,7 +13,7 @@ class Program
         IPAddress broadcast = IPAddress.Parse("127.0.0.1");
         IPEndPoint ep = new IPEndPoint(broadcast, 11000);
 
-        byte[] sendbuf = Encoding.ASCII.GetBytes(args[0]);
+        byte[] sendbuf = Encoding.ASCII.GetBytes(message);
         client.Send(sendbuf, sendbuf.Length, ep);
 
         Console.WriteLine("Message sent to the broadcast address");
