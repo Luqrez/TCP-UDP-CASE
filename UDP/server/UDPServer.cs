@@ -1,5 +1,3 @@
-
-
 using System;
 using System.Net;
 using System.Net.Sockets;
@@ -21,8 +19,16 @@ public class UDPListener
                 Console.WriteLine("Waiting for broadcast");
                 byte[] bytes = listener.Receive(ref groupEP);
 
-                Console.WriteLine($"Received broadcast from {groupEP} :");
-                Console.WriteLine($" {Encoding.ASCII.GetString(bytes, 0, bytes.Length)}");
+                string receivedMessage = Encoding.ASCII.GetString(bytes, 0, bytes.Length);
+                Console.WriteLine($"Received broadcast from {groupEP} : {receivedMessage}");
+
+                // Prepare response
+                string responseMessage = "Message received: " + receivedMessage;
+                byte[] responseBytes = Encoding.ASCII.GetBytes(responseMessage);
+
+                // Send response back to the sender
+                listener.Send(responseBytes, responseBytes.Length, groupEP);
+                Console.WriteLine($"Response sent to {groupEP}");
             }
         }
         catch (SocketException e)
