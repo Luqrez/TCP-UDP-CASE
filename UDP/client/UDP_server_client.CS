@@ -13,6 +13,23 @@ class Program
         IPAddress broadcast = IPAddress.Parse("127.0.0.1");
         IPEndPoint ep = new IPEndPoint(broadcast, 11000);
 
+
+        string message;
+        if (args.Length == 0)
+        {
+            Console.Write("Enter a message to send: ");
+            message = Console.ReadLine();
+            if (string.IsNullOrWhiteSpace(message))
+            {
+                Console.WriteLine("No message entered. Exiting.");
+                return;
+            }
+        }
+        else
+        {
+            message = args[0];
+        }
+
         byte[] sendbuf = Encoding.ASCII.GetBytes(message);
         client.Send(sendbuf, sendbuf.Length, ep);
 
