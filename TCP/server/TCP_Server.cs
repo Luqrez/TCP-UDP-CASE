@@ -3,9 +3,13 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
+using System.Collections.Generic; // Add this at the top
 
 class TcpChatServer
 {
+    static List<TcpClient> clients = new List<TcpClient>(); // Shared list of clients
+    static object clientsLock = new object(); // For thread safety
+
     static void Main()
     {
         TcpListener server = null;
@@ -25,6 +29,11 @@ class TcpChatServer
 
                 TcpClient client = server.AcceptTcpClient();
                 Console.WriteLine("Forbundet!");
+
+                lock (clientsLock)
+                {
+                    clients.Add(client); // Add new client to the list
+                }
 
                 Thread t = new Thread(HandleClient);
                 t.Start(client);
@@ -58,10 +67,23 @@ class TcpChatServer
                 string data = Encoding.ASCII.GetString(bytes, 0, i);
                 Console.WriteLine("Modtaget: {0}", data);
 
-                // Send svar tilbage
-                string response = $"Server: {data}";
-                byte[] msg = Encoding.ASCII.GetBytes(response);
-                stream.Write(msg, 0, msg.Length);
+                // Broadcast to all clients except the sender
+                byte[] msg = Encoding.ASCII.GetBytes(data);
+                lock (clientsLock)
+                {
+                    foreach (var c in clients)
+                    {
+                        if (c != client && c.Connected)
+                        {
+                            try
+                            {
+                                NetworkStream s = c.GetStream();
+                                s.Write(msg, 0, msg.Length);
+                            }
+                            catch { /* Ignore errors for disconnected clients */ }
+                        }
+                    }
+                }
             }
         }
         catch (Exception e)
@@ -70,6 +92,10 @@ class TcpChatServer
         }
         finally
         {
+            lock (clientsLock)
+            {
+                clients.Remove(client); // Remove client on disconnect
+            }
             client.Close();
         }
     }
